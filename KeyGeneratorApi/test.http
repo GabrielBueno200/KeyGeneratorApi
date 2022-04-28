@@ -1,7 +1,27 @@
 POST http://localhost:7071/api/KeyGeneratorApi
 Content-Type: application/json
 
-{
-    "initialCode": 100000000,
-    "n": 6000
-}
+[
+    {
+        "initialCode": 100000000,
+        "n": 6000
+    },
+    {
+        "initialCode": 10000,
+        "n": 6000
+    }
+]
+
+POST https://keygeneratorapi.azurewebsites.net/api/KeyGeneratorApi?code=oAkAb2eN54aMH2FTsXKwvY9OGkNDIkPmdXzSgQEtPu4/1gJ4sgm6Zg==
+Content-Type: application/json
+
+[
+    {
+        "initialCode": 100000000,
+        "n": 6000
+    },
+    {
+        "initialCode": 10000,
+        "n": 6000
+    }
+]
