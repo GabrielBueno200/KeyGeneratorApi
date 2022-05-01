@@ -1,11 +1,7 @@
 import json
 from time import perf_counter
 import azure.functions as func
-from KeyGeneratorApi.utils import get_numbers_file
-
-
-primeHash = get_numbers_file('primeHash.txt')
-indexHash = get_numbers_file('indexHash.txt')
+import KeyGeneratorApi.key_service as key_service
 
 
 def validate_payload(initial_code: int, n: int) -> bool:
@@ -13,15 +9,15 @@ def validate_payload(initial_code: int, n: int) -> bool:
 
 
 def generate_key(initial_code: int, n: int) -> int:
-    indexHash = int(indexHash[initial_code])
-    lprimeHash = int(primeHash[indexHash-n+1])
-    rprimeHash = int(primeHash[indexHash+n]) if initial_code != int(
-        primeHash[indexHash+1]) else int(primeHash[indexHash+n+1])
+    lower_prime = key_service.calculate_lower_prime(initial_code, n)
+    upper_prime = key_service.calculate_upper_prime(initial_code, n)
 
-    return lprimeHash*rprimeHash
+    return lower_prime * upper_prime
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
+    request_start_time = perf_counter()
+
     if not req.get_body:
         return func.HttpResponse("Response body is empty", status_code=400)
 
@@ -29,28 +25,39 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     try:
         payloads: list[dict] = req_body
-        response = []
+        keys = []
 
         for payload in payloads:
             initial_code: int = payload['initialCode']
             n: int = payload['n']
 
-            is_valid_payload = validate_payload(initial_code, n)
+            payload['isValid'] = validate_payload(initial_code, n)
 
-            if is_valid_payload:
-                start_time = perf_counter()
+            if payload['isValid']:
+                key_generation_start_time = perf_counter()
                 key = generate_key(initial_code, n)
-                finish_time = perf_counter()
-                total_time = finish_time - start_time
+                key_generation_total_time = perf_counter() - key_generation_start_time
 
-                response.append(
+                keys.append(
                     {
-                        "isValid": True,
+                        "payload": payload,
                         "key": key,
-                        "time": total_time
+                        "time": key_generation_total_time
                     })
             else:
-                response.append({"isValid": False})
+                keys.append(
+                    {
+                        "payload": payload,
+                        "key": None,
+                        "time": key_generation_total_time
+                    })
+
+        request_total_time = perf_counter() - request_start_time
+
+        response = {
+            "requestTime": request_total_time,
+            "keys": keys,
+        }
 
         return func.HttpResponse(json.dumps(response), status_code=200, mimetype="application/json")
 
