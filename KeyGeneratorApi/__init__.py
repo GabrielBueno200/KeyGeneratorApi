@@ -1,7 +1,7 @@
 import json
 from time import perf_counter
 import azure.functions as func
-import KeyGeneratorApi.key_service as key_service
+from sympy import prime, primepi
 
 
 def validate_payload(initial_code: int, n: int) -> bool:
@@ -9,8 +9,13 @@ def validate_payload(initial_code: int, n: int) -> bool:
 
 
 def generate_key(initial_code: int, n: int) -> int:
-    lower_prime = key_service.calculate_lower_prime(initial_code, n)
-    upper_prime = key_service.calculate_upper_prime(initial_code, n)
+    last_prime_index = primepi(initial_code)
+
+    lower_prime_index = last_prime_index - n - 1
+    lower_prime = prime(lower_prime_index)
+
+    upper_prime_index = last_prime_index + n - 1
+    upper_prime = prime(upper_prime_index)
 
     return lower_prime * upper_prime
 
