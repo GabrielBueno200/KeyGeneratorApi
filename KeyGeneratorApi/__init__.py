@@ -33,15 +33,16 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
             payload['isValid'] = validate_payload(initial_code, n)
 
-            key_generation_start_time = perf_counter()
-            key = generate_key(initial_code, n)
-            key_generation_total_time = perf_counter() - key_generation_start_time
+            if payload['isValid']:
+                key_generation_start_time = perf_counter()
+                key = generate_key(initial_code, n)
+                key_generation_total_time = perf_counter() - key_generation_start_time
 
             keys.append(
                 {
                     "payload": payload,
                     "key": key if payload['isValid'] else None,
-                    "time": key_generation_total_time
+                    "time": key_generation_total_time if payload['isValid'] else 0
                 })
 
         request_total_time = perf_counter() - request_start_time
