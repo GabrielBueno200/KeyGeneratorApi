@@ -1,0 +1,9 @@
+POST http://localhost:7071/api/KeyGenApi
+Content-Type: application/json
+
+[
+    {
+        "initialCode": 10000000,
+        "n": 15000
+    }
+]
